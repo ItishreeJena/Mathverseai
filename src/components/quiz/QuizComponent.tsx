@@ -1,24 +1,59 @@
 import React, { useState } from 'react';
 import { QuizQuestion } from '../../types';
 import MathView from '../common/MathView';
-import { CheckCircle2, XCircle, Lightbulb, ChevronRight, Award, RotateCcw } from 'lucide-react';
+import { CheckCircle2, XCircle, Lightbulb, ChevronRight, Award, RotateCcw, Sparkles, RefreshCw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface QuizComponentProps {
   questions: QuizQuestion[];
   xpReward: number;
   onComplete: (score: number, earnedXp: number) => void;
+  topicTitle?: string;
 }
 
-export const QuizComponent: React.FC<QuizComponentProps> = ({ questions, xpReward, onComplete }) => {
+export const QuizComponent: React.FC<QuizComponentProps> = ({ questions, xpReward, onComplete, topicTitle = 'Mathematics for AI' }) => {
+  const [activeQuestions, setActiveQuestions] = useState<QuizQuestion[]>(questions);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [revealedHints, setRevealedHints] = useState<number>(0);
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [isGeneratingAiQ, setIsGeneratingAiQ] = useState(false);
 
-  const currentQ = questions[currentIndex];
+  const currentQ = activeQuestions[currentIndex];
+
+  const handleGenerateAiQuestion = async () => {
+    setIsGeneratingAiQ(true);
+    try {
+      const res = await fetch('/api/tutor/generate-question', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: topicTitle, difficulty: 'Intermediate' }),
+      });
+      const data = await res.json();
+      if (data.question) {
+        const newQ: QuizQuestion = {
+          id: `ai_${Date.now()}`,
+          question: data.question.question,
+          options: data.question.options,
+          correctAnswer: data.question.correctAnswer,
+          type: 'multiple-choice',
+          hints: data.question.hints || ['Think about the fundamental definition and geometric intuition.'],
+          explanation: data.question.explanation,
+        };
+        setActiveQuestions(prev => [...prev, newQ]);
+        setCurrentIndex(activeQuestions.length); // jump to newly created
+        setSelectedOption(null);
+        setIsAnswerSubmitted(false);
+        setRevealedHints(0);
+      }
+    } catch (e) {
+      console.error('Error generating AI question:', e);
+    } finally {
+      setIsGeneratingAiQ(false);
+    }
+  };
   if (!currentQ) return null;
 
   const handleSubmit = () => {
@@ -30,14 +65,14 @@ export const QuizComponent: React.FC<QuizComponentProps> = ({ questions, xpRewar
   };
 
   const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
+    if (currentIndex < activeQuestions.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setSelectedOption(null);
       setIsAnswerSubmitted(false);
       setRevealedHints(0);
     } else {
       setIsFinished(true);
-      const finalScore = Math.round(((correctCount + (selectedOption === currentQ.correctAnswer ? 1 : 0)) / questions.length) * 100);
+      const finalScore = Math.round(((correctCount + (selectedOption === currentQ.correctAnswer ? 1 : 0)) / activeQuestions.length) * 100);
       const earnedXp = Math.round((finalScore / 100) * xpReward);
       if (finalScore >= 70) {
         confetti({ particleCount: 70, spread: 60 });
@@ -62,7 +97,7 @@ export const QuizComponent: React.FC<QuizComponentProps> = ({ questions, xpRewar
   };
 
   if (isFinished) {
-    const finalScore = Math.round((correctCount / questions.length) * 100);
+    const finalScore = Math.round((correctCount / activeQuestions.length) * 100);
     const earnedXp = Math.round((finalScore / 100) * xpReward);
 
     return (
@@ -72,7 +107,7 @@ export const QuizComponent: React.FC<QuizComponentProps> = ({ questions, xpRewar
         </div>
         <h3 className="text-xl font-bold text-white">Mastery Assessment Complete!</h3>
         <p className="text-sm text-slate-300">
-          You scored <span className="font-bold text-cyan-400 font-mono text-base">{finalScore}%</span> ({correctCount}/{questions.length} correct)
+          You scored <span className="font-bold text-cyan-400 font-mono text-base">{finalScore}%</span> ({correctCount}/{activeQuestions.length} correct)
         </p>
 
         <div className="inline-block px-4 py-2 bg-slate-950 rounded-lg border border-slate-800 font-mono text-sm text-amber-400 font-semibold">
@@ -95,10 +130,25 @@ export const QuizComponent: React.FC<QuizComponentProps> = ({ questions, xpRewar
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-6 shadow-xl">
-      <div className="flex items-center justify-between text-xs text-slate-400 mb-4 pb-3 border-b border-slate-800">
-        <span className="font-mono uppercase tracking-wider text-cyan-400 font-semibold">
-          Mastery Check · Question {currentIndex + 1} of {questions.length}
-        </span>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 mb-4 pb-3 border-b border-slate-800">
+        <div className="flex items-center gap-3">
+          <span className="font-mono uppercase tracking-wider text-cyan-400 font-semibold">
+            Mastery Check · Question {currentIndex + 1} of {activeQuestions.length}
+          </span>
+          <button
+            onClick={handleGenerateAiQuestion}
+            disabled={isGeneratingAiQ}
+            className="px-2.5 py-1 rounded bg-indigo-950/70 border border-indigo-700/60 text-indigo-300 hover:text-white flex items-center gap-1 text-[11px] font-medium transition-colors"
+            title="Generate a brand new practice question with Gemini AI"
+          >
+            {isGeneratingAiQ ? (
+              <RefreshCw className="w-3 h-3 animate-spin text-cyan-400" />
+            ) : (
+              <Sparkles className="w-3 h-3 text-cyan-400" />
+            )}
+            <span>{isGeneratingAiQ ? 'Generating...' : 'AI Practice Question'}</span>
+          </button>
+        </div>
         <span className="font-mono text-slate-400">
           Potential: +{xpReward} XP
         </span>

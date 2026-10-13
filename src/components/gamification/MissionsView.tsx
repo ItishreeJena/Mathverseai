@@ -10,11 +10,13 @@ import confetti from 'canvas-confetti';
 interface MissionsViewProps {
   completedMissions: string[];
   onCompleteMission: (missionId: string, earnedXp: number) => void;
+  onOpenGym?: () => void;
 }
 
 export const MissionsView: React.FC<MissionsViewProps> = ({
   completedMissions,
   onCompleteMission,
+  onOpenGym,
 }) => {
   const [activeMission, setActiveMission] = useState<string | null>('vector_voyager');
 
@@ -91,11 +93,22 @@ export const MissionsView: React.FC<MissionsViewProps> = ({
             </p>
           </div>
 
-          <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-center shrink-0">
-            <div className="text-[11px] text-slate-400 font-mono">Missions Solved</div>
-            <div className="text-xl font-bold font-mono text-cyan-400">
-              {completedMissions.length} / {MISSIONS.length}
+          <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-center shrink-0 space-y-2">
+            <div>
+              <div className="text-[11px] text-slate-400 font-mono">Missions Solved</div>
+              <div className="text-xl font-bold font-mono text-cyan-400">
+                {completedMissions.length} / {MISSIONS.length}
+              </div>
             </div>
+            {onOpenGym && (
+              <button
+                onClick={onOpenGym}
+                className="text-xs px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 w-full"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>AI Math Gym</span>
+              </button>
+            )}
           </div>
         </div>
 

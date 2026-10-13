@@ -1,60 +1,88 @@
 import React from 'react';
-import { UserProgress, ModuleInfo, Lesson } from '../../types';
-import { calculateLevel } from '../../services/storageService';
+import { UserProgress, UserAccount, StreakInfo } from '../../types';
+import { calculateLevel, getStreakInfo } from '../../services/storageService';
 import { MODULES, LESSONS } from '../../data/curriculumData';
 import {
   Flame,
   Award,
   BookOpen,
   ArrowRight,
-  TrendingUp,
   Target,
   Zap,
-  Clock,
   Sparkles,
   CheckCircle2,
-  AlertTriangle
+  Calendar,
+  User,
+  ChevronRight,
+  Code2,
+  Dumbbell,
+  GitPullRequest
 } from 'lucide-react';
 
 interface DashboardProps {
   progress: UserProgress;
+  currentUser: UserAccount;
   onSelectLesson: (lessonId: string) => void;
   onOpenMissions: () => void;
   onOpenDiagnostic: () => void;
   onOpenPlayground: (type: string) => void;
+  onOpenStreak: () => void;
+  onOpenAuth: () => void;
+  onOpenCodeLab?: () => void;
+  onOpenGym?: () => void;
+  onOpenGitHubSync?: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
   progress,
+  currentUser,
   onSelectLesson,
   onOpenMissions,
   onOpenDiagnostic,
   onOpenPlayground,
+  onOpenStreak,
+  onOpenAuth,
+  onOpenCodeLab,
+  onOpenGym,
+  onOpenGitHubSync,
 }) => {
+
   const levelInfo = calculateLevel(progress.xp);
+  const streakInfo: StreakInfo = getStreakInfo(progress);
 
   // Find next recommended lesson
   const allLessonIds = MODULES.flatMap(m => m.lessonIds);
   const nextLessonId = allLessonIds.find(id => !progress.completedLessonIds.includes(id)) || allLessonIds[0];
   const nextLesson = LESSONS[nextLessonId];
 
-  // Recently completed lessons
-  const completedLessons = progress.completedLessonIds.map(id => LESSONS[id]).filter(Boolean);
-
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16">
-      {/* Hero Welcome & Resume Learning Card */}
+      {/* Hero Welcome Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950/70 to-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs text-cyan-400 font-mono">
-              <span>Mathematics for AI & Machine Learning</span>
+              <button
+                onClick={onOpenAuth}
+                className="hover:underline flex items-center gap-1 text-slate-300"
+              >
+                <User className="w-3.5 h-3.5 text-cyan-400" />
+                {currentUser.name}
+              </button>
               <span aria-hidden="true">·</span>
               <span>Stage {nextLesson?.stage || 1} Curriculum</span>
+              <span aria-hidden="true">·</span>
+              <button
+                onClick={onOpenStreak}
+                className="text-rose-400 hover:underline flex items-center gap-1 font-semibold"
+              >
+                <Flame className="w-3.5 h-3.5 fill-rose-500" />
+                {progress.streakDays} Day Streak
+              </button>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              Welcome back to MathVerse AI
+              Welcome back, {currentUser.name.split(' ')[0]}!
             </h1>
 
             <p className="text-sm text-slate-300 max-w-xl leading-relaxed">
@@ -68,7 +96,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   className="text-xs text-amber-300 hover:text-amber-200 underline flex items-center gap-1 font-medium"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  Not sure where to begin? Take the 2-minute diagnostic skill assessment →
+                  Not sure where to begin? Take the 2-minute diagnostic assessment →
                 </button>
               </div>
             )}
@@ -100,8 +128,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* KPI Stats Strip (Anti-slop clean design with tabular numbers) */}
+      {/* KPI Stats Strip with Clickable Daily Streak Card */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Daily Streak Card */}
+        <div
+          onClick={onOpenStreak}
+          className="bg-gradient-to-br from-rose-950/30 via-slate-900 to-slate-900 border border-rose-500/30 hover:border-rose-400/60 rounded-xl p-4 shadow-sm cursor-pointer transition-all group"
+        >
+          <div className="text-xs text-rose-300 flex items-center justify-between mb-1">
+            <span className="flex items-center gap-1.5 font-semibold">
+              <Flame className="w-4 h-4 fill-rose-500 text-rose-400 animate-pulse" />
+              Daily Streak
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 opacity-60 group-hover:translate-x-0.5 transition-transform" />
+          </div>
+          <div className="text-2xl font-bold font-mono text-white tabular-nums flex items-baseline gap-1.5">
+            {progress.streakDays}
+            <span className="text-xs text-rose-400 font-sans font-semibold">
+              {progress.streakDays === 1 ? 'Day' : 'Days'}
+            </span>
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+            <span>{streakInfo.isActiveToday ? 'Practiced Today ✓' : 'Practice Today!'}</span>
+            <span className="font-mono text-amber-400 font-medium">Best: {streakInfo.longestStreak}d</span>
+          </div>
+        </div>
+
+        {/* Experience Card */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-sm">
           <div className="text-xs text-slate-400 flex items-center gap-1.5 mb-1">
             <Zap className="w-3.5 h-3.5 text-amber-400" />
@@ -110,11 +163,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="text-2xl font-bold font-mono text-white tabular-nums">
             {progress.xp} <span className="text-xs text-amber-400 font-sans font-semibold">XP</span>
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 mt-1 truncate">
             {levelInfo.title}
           </div>
         </div>
 
+        {/* Level Card */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-sm">
           <div className="text-xs text-slate-400 flex items-center gap-1.5 mb-1">
             <Award className="w-3.5 h-3.5 text-cyan-400" />
@@ -128,19 +182,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
 
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-sm">
-          <div className="text-xs text-slate-400 flex items-center gap-1.5 mb-1">
-            <Flame className="w-3.5 h-3.5 text-rose-400" />
-            Active Streak
-          </div>
-          <div className="text-2xl font-bold font-mono text-white tabular-nums">
-            {progress.streakDays} <span className="text-xs text-rose-400 font-sans font-semibold">Days</span>
-          </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            Keep practicing daily!
-          </div>
-        </div>
-
+        {/* Curriculum Mastered */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-sm">
           <div className="text-xs text-slate-400 flex items-center gap-1.5 mb-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -152,6 +194,53 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="text-[11px] text-emerald-400 mt-1">
             {Math.round((progress.completedLessonIds.length / allLessonIds.length) * 100)}% Mastered
           </div>
+        </div>
+      </div>
+
+      {/* 7-Day Streak Mini Activity Strip in Dashboard */}
+      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <div className="text-xs font-semibold text-white flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-cyan-400" />
+            Daily Learning Activity Track
+          </div>
+          <p className="text-[11px] text-slate-400">
+            {streakInfo.isActiveToday
+              ? 'Great job! You have logged mathematical practice today.'
+              : 'Complete a lesson quiz or laboratory challenge today to extend your streak!'}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-start">
+          <div className="flex items-center gap-1.5">
+            {streakInfo.weeklyHistory.map((item, idx) => (
+              <div
+                key={idx}
+                className={`w-8 h-9 rounded-lg border text-center flex flex-col items-center justify-center text-[10px] ${
+                  item.isActive
+                    ? 'bg-rose-950/40 border-rose-500/50 text-rose-300 font-bold'
+                    : item.isToday
+                    ? 'bg-amber-950/30 border-amber-500/40 text-amber-300'
+                    : 'bg-slate-950 border-slate-800 text-slate-500'
+                }`}
+                title={`${item.dateStr}: ${item.isActive ? 'Active' : 'No activity'}`}
+              >
+                <span className="font-mono text-[9px] uppercase">{item.dayName.charAt(0)}</span>
+                {item.isActive ? (
+                  <Flame className="w-3 h-3 fill-rose-500 text-rose-400" />
+                ) : (
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-700 mt-0.5" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={onOpenStreak}
+            className="text-xs text-rose-400 hover:text-rose-300 underline font-medium pl-2 whitespace-nowrap"
+          >
+            Details →
+          </button>
         </div>
       </div>
 
@@ -209,8 +298,93 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
+      {/* AI Features & Tools Strip */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Math to Code Card */}
+        <div
+          onClick={onOpenCodeLab}
+          className="bg-gradient-to-br from-cyan-950/40 via-slate-900 to-slate-900 border border-cyan-800/40 hover:border-cyan-500/80 rounded-xl p-5 shadow-lg cursor-pointer transition-all group space-y-2.5"
+        >
+          <div className="flex items-center justify-between">
+            <div className="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-700/60 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition-transform">
+              <Code2 className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-mono uppercase bg-cyan-950/80 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800">
+              PyTorch & NumPy
+            </span>
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+              Math-to-Code Lab
+            </h4>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              Bridge attention formulas, cross-entropy, and gradients directly into production tensor code.
+            </p>
+          </div>
+          <div className="text-xs text-cyan-400 font-medium flex items-center gap-1 pt-1">
+            <span>Open Code Lab</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
+
+        {/* AI Math Gym Card */}
+        <div
+          onClick={onOpenGym}
+          className="bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-900 border border-amber-800/40 hover:border-amber-500/80 rounded-xl p-5 shadow-lg cursor-pointer transition-all group space-y-2.5"
+        >
+          <div className="flex items-center justify-between">
+            <div className="w-8 h-8 rounded-lg bg-amber-950 border border-amber-700/60 flex items-center justify-center text-amber-400 group-hover:scale-105 transition-transform">
+              <Dumbbell className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-mono uppercase bg-amber-950/80 text-amber-300 px-2 py-0.5 rounded border border-amber-800">
+              Gemini Powered
+            </span>
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">
+              AI Math Gym
+            </h4>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              Generate dynamic practice problems across any curriculum topic with hints and XP scoring.
+            </p>
+          </div>
+          <div className="text-xs text-amber-400 font-medium flex items-center gap-1 pt-1">
+            <span>Enter Math Gym</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
+
+        {/* GitHub Sync Card */}
+        <div
+          onClick={onOpenGitHubSync}
+          className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-700/60 hover:border-emerald-500/80 rounded-xl p-5 shadow-lg cursor-pointer transition-all group space-y-2.5"
+        >
+          <div className="flex items-center justify-between">
+            <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
+              <GitPullRequest className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-mono uppercase bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">
+              Ready to Push
+            </span>
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+              GitHub Sync & Push
+            </h4>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              Push full codebase to <code className="text-slate-300 font-mono text-[11px]">itishree-jena/math-for-ai</code> with 1-click token push.
+            </p>
+          </div>
+          <div className="text-xs text-emerald-400 font-medium flex items-center gap-1 pt-1">
+            <span>Manage Repository</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </div>
+      </div>
+
       {/* Featured Visual Math Playgrounds Banner */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
+
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-white flex items-center gap-2">

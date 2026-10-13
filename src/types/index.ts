@@ -63,7 +63,10 @@ export interface UserProgress {
   xp: number;
   level: number;
   streakDays: number;
-  lastActiveDate: string;
+  longestStreak: number;
+  totalActiveDays: number;
+  lastActiveDate: string; // YYYY-MM-DD
+  activityDates: string[]; // List of YYYY-MM-DD strings
   completedLessonIds: string[];
   masteryScores: Record<string, number>; // 0 to 100 per module ID
   savedNotes: Record<string, string>; // lessonId -> markdown note
@@ -72,6 +75,25 @@ export interface UserProgress {
   diagnosticTaken: boolean;
   recommendedStage: ModuleStage;
   completedMissions: string[];
+}
+
+export interface UserAccount {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  avatar: string; // e.g. 'turing', 'lovelace', 'euler', 'gauss', 'ramanujan'
+  role?: string;
+  createdAt: string;
+}
+
+export interface StreakInfo {
+  currentStreak: number;
+  longestStreak: number;
+  totalActiveDays: number;
+  lastActiveDate: string;
+  isActiveToday: boolean;
+  weeklyHistory: { dayName: string; dateStr: string; isActive: boolean; isToday: boolean }[];
 }
 
 export interface Achievement {
@@ -113,3 +135,4 @@ export interface FormulaCard {
   aiUse: string;
   example: string;
 }
+

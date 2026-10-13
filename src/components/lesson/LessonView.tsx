@@ -352,6 +352,7 @@ export const LessonView: React.FC<LessonViewProps> = ({
             questions={lesson.quiz}
             xpReward={lesson.xpReward}
             onComplete={onCompleteQuiz}
+            topicTitle={lesson.title}
           />
         </div>
       )}
@@ -364,21 +365,39 @@ export const LessonView: React.FC<LessonViewProps> = ({
               <Edit3 className="w-5 h-5 text-indigo-400" />
               Personal Study Notes for {lesson.title}
             </h3>
-            {isEditingNote ? (
-              <button
-                onClick={handleSaveNote}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow"
-              >
-                Save Notes
-              </button>
-            ) : (
-              <button
-                onClick={() => setIsEditingNote(true)}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700"
-              >
-                Edit Notes
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {noteText && (
+                <button
+                  onClick={() => {
+                    const blob = new Blob([`# ${lesson.title} — Study Notes\n\n${noteText}\n\n---\nExported from MathVerse AI`], { type: 'text/markdown' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${lesson.id}_notes.md`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium border border-slate-700"
+                >
+                  Download .md
+                </button>
+              )}
+              {isEditingNote ? (
+                <button
+                  onClick={handleSaveNote}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow"
+                >
+                  Save Notes
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsEditingNote(true)}
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700"
+                >
+                  Edit Notes
+                </button>
+              )}
+            </div>
           </div>
 
           {isEditingNote ? (

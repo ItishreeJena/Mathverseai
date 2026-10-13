@@ -63,4 +63,20 @@ assert(lvl1.level === 1 && lvl1.title === 'Novice Geometer', '150 XP should be L
 const lvl2 = calculateLevel(400);
 assert(lvl2.level === 2 && lvl2.title === 'Vector Apprentice', '400 XP should be Level 2');
 
-console.log('\nAll 12 mathematical and progress unit tests PASSED cleanly!');
+// 6. Daily Streak Logic
+import { recordDailyActivity, createDefaultProgress, getTodayDateString, getYesterdayDateString } from '../src/services/storageService';
+
+const baseProg = createDefaultProgress(3);
+baseProg.lastActiveDate = getYesterdayDateString();
+const streakResult = recordDailyActivity(baseProg);
+assert(streakResult.streakIncremented === true, 'Streak should increment if user was active yesterday');
+assert(streakResult.updatedProgress.streakDays === 4, 'Streak should increase from 3 to 4 days');
+
+// Missed days
+const brokenProg = createDefaultProgress(5);
+brokenProg.lastActiveDate = '2026-01-01'; // old date
+const brokenResult = recordDailyActivity(brokenProg);
+assert(brokenResult.updatedProgress.streakDays === 1, 'Streak should reset to 1 if user missed days');
+
+console.log('\nAll 16 mathematical, streak, and progress unit tests PASSED cleanly!');
+

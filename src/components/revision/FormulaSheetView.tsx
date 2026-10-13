@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { FORMULA_CARDS } from '../../data/formulaData';
 import MathView from '../common/MathView';
-import { Search, Layers, RotateCw, BookOpen, Sparkles, Filter } from 'lucide-react';
+import { Search, Layers, RotateCw, BookOpen, Sparkles, Filter, Code2 } from 'lucide-react';
 
-export const FormulaSheetView: React.FC = () => {
+interface FormulaSheetViewProps {
+  onOpenCodeLab?: () => void;
+}
+
+export const FormulaSheetView: React.FC<FormulaSheetViewProps> = ({ onOpenCodeLab }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTopic, setSelectedTopic] = useState<string>('All');
   const [studyMode, setStudyMode] = useState<'sheet' | 'flashcards'>('sheet');
@@ -48,23 +52,34 @@ export const FormulaSheetView: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
-            <button
-              onClick={() => setStudyMode('sheet')}
-              className={`px-3 py-1.5 rounded font-medium transition-colors ${
-                studyMode === 'sheet' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Formula Sheet
-            </button>
-            <button
-              onClick={() => setStudyMode('flashcards')}
-              className={`px-3 py-1.5 rounded font-medium transition-colors ${
-                studyMode === 'flashcards' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Flashcard Mode
-            </button>
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            {onOpenCodeLab && (
+              <button
+                onClick={onOpenCodeLab}
+                className="px-3 py-1.5 rounded-lg bg-slate-950 border border-cyan-800/60 hover:border-cyan-500 text-cyan-300 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+              >
+                <Code2 className="w-3.5 h-3.5" />
+                <span>PyTorch & NumPy Lab</span>
+              </button>
+            )}
+            <div className="flex items-center gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+              <button
+                onClick={() => setStudyMode('sheet')}
+                className={`px-3 py-1.5 rounded font-medium transition-colors ${
+                  studyMode === 'sheet' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Formula Sheet
+              </button>
+              <button
+                onClick={() => setStudyMode('flashcards')}
+                className={`px-3 py-1.5 rounded font-medium transition-colors ${
+                  studyMode === 'flashcards' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Flashcard Mode
+              </button>
+            </div>
           </div>
         </div>
 

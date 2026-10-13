@@ -26,7 +26,12 @@ MathVerse AI is an interactive, gamified mathematics learning platform tailored 
 - **Loss Function Explorer**: Side-by-side comparison of L2 (MSE), L1 (MAE), and Huber loss and gradients.
 - **PCA Dimensionality Reduction**: Rotate a 1D projection axis to discover the 1st Principal Component that maximizes preserved variance.
 
-### 3. Gamification & Missions
+### 3. Gamification, Daily Streaks & Missions
+- **Daily Streak Engine**: Tracks daily learning activity automatically across calendar days (`YYYY-MM-DD`).
+  - Active streak indicator in both Navbar and Dashboard with flame icon (`🔥 {streak}d`).
+  - Interactive 7-Day Activity Calendar displaying daily participation checkmarks.
+  - Streak milestones with XP awards (Math Spark 3d, Weekly Inferno 7d, Calculus Constancy 14d, Deep Learning Sovereign 30d).
+  - Manual practice logger / simulation button to verify day-by-day progression.
 - **XP & Levels**: Progress from *Novice Geometer* to *Deep Learning Sovereign*.
 - **Interactive Missions**:
   - *Vector Voyager*: Navigate 2D coordinate space to hit target points.
@@ -36,7 +41,12 @@ MathVerse AI is an interactive, gamified mathematics learning platform tailored 
   - *Neural Boss Fight*: Reduce network prediction loss below $0.01$.
 - **Myth Busters**: A curated misconception collection explaining why common wrong answers fail in real ML code (e.g. $AB \neq BA$, zero weight initialization symmetry, correlation vs causation).
 
-### 4. Smart Quizzes & Structured Lessons
+### 4. User Authentication & Profile Isolation
+- **Multi-User Accounts**: Sign in, sign up, and isolated per-user progress, bookmark, and note persistence.
+- **Mathematician Avatars**: Custom persona selection (Alan Turing, Ada Lovelace, Leonhard Euler, Carl Gauss, Srinivasa Ramanujan).
+- **Fast Profile Switching**: One-click demo account switcher to easily test different student progress states and streaks.
+
+### 5. Smart Quizzes & Structured Lessons
 - 11-step structured lesson sequence:
   1. Why this concept matters in AI
   2. Everyday analogy
@@ -51,10 +61,26 @@ MathVerse AI is an interactive, gamified mathematics learning platform tailored 
   11. Revision summary sheet with formulas and classic traps
 - Spaced repetition and local persistence of notes and bookmarks.
 
-### 5. AI Learning Companion (Tutor)
+### 6. AI Learning Companion (Tutor)
 - Server-side integration with Google Gemini (`gemini-3.8-flash` via `@google/genai`).
 - Context-aware assistance that automatically ingests the current lesson title, topic, and active formula.
 - Reliable offline pedagogical fallback when no API key is configured.
+
+### 7. Math-to-Code Lab (PyTorch & NumPy Generator)
+- Converts high-level AI mathematical definitions directly into production vectorized Python code.
+- Generates side-by-side **PyTorch** (`torch.nn` / `torch.Tensor` with autograd) and **NumPy** implementations.
+- Tensor shape tracking (e.g. `(B, S, d) -> (B, S, S) -> (B, S, d)`) and real-world architecture callouts (Transformers, ResNets, Adam optimizers).
+
+### 8. AI Math Gym (Dynamic Problem Generator)
+- On-demand dynamic problem synthesis powered by the Gemini API across all 7 curriculum stages.
+- Variable difficulty levels (Novice, Intermediate, Master) with progressive hints, KaTeX typesetting, and step-by-step misconception feedback.
+- Awards XP and automatically updates the daily streak upon correct completion.
+
+### 9. GitHub Sync & 1-Click Push Integration
+- Built-in GitHub remote synchronizer for `https://github.com/itishree-jena/math-for-ai.git`.
+- Displays branch state, commit hash, and staged files.
+- Provides 1-click token push via backend `/api/git/push` or copy-pasteable terminal commands.
+
 
 ---
 
