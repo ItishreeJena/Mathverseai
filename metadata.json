@@ -1,0 +1,6 @@
+{
+  "name": "MathVerse AI — Mathematics for Artificial Intelligence",
+  "description": "Interactive mathematics learning platform for AI, Machine Learning, Deep Learning, and Data Science with visual playgrounds, gamified mastery, and an AI tutor companion.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
